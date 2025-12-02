@@ -20,7 +20,7 @@ spec:
         image: telegraf:1.28
         envFrom:
         - secretRef:
-            name: telegraf-secrets   # ⚙️ Gọi secret chứa token InfluxDB
+            name: telegraf-secrets   # call secret
         volumeMounts:
         - name: config
           mountPath: /etc/telegraf/
