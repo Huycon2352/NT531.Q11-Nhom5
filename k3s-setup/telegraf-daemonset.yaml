@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: telegraf
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: telegraf
+  template:
+    metadata:
+      labels:
+        app: telegraf
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      serviceAccountName: telegraf
+      containers:
+      - name: telegraf
+        image: telegraf:1.28
+        envFrom:
+        - secretRef:
+            name: telegraf-secrets   # ⚙️ Gọi secret chứa token InfluxDB
+        volumeMounts:
+        - name: config
+          mountPath: /etc/telegraf/
+          readOnly: true
+        - name: proc
+          mountPath: /host/proc
+          readOnly: true
+        - name: sys
+          mountPath: /host/sys
+          readOnly: true
+        - name: etc
+          mountPath: /host/etc
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: telegraf-config
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: etc
+        hostPath:
+          path: /etc

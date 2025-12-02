@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telegraf-config
+  namespace: kube-system
+data:
+  telegraf.conf: |
+    # ===============================================
+    # AGENT CONFIG
+    # ===============================================
+    [agent]
+      interval = "1s"
+      round_interval = true
+      metric_batch_size = 1000
+      metric_buffer_limit = 10000
+      collection_jitter = "0s"
+      flush_interval = "2s"
+      flush_jitter = "0s"
+      hostname = "$HOSTNAME"  # ⚙️ Định danh node, sẽ tự động lấy hostname pod
+
+    # ===============================================
+    # OUTPUTS – Gửi về InfluxDB
+    # ===============================================
+    [[outputs.influxdb_v2]]
+      urls = ["http://10.0.0.150:8086"]   # ⚙️ URL InfluxDB service
+      token = "$INFLUX_TOKEN"                                     # ⚙️ Token
+      organization = "myorg"                                      # ⚙️ Org name
+      bucket = "k3s"                                    # ⚙️ Bucket (có thể đổi: bucket_inside / bucket_external)
+      namepass = ["processes","swap","system","nstat","diskio","kernal","cpu", "mem", "disk","net"]
+
+    [[outputs.influxdb_v2]]
+      urls = ["http://10.0.0.150:8086"]   # ⚙️ URL InfluxDB service
+      token = "$INFLUX_TOKEN"                                     # ⚙️ Token
+      organization = "myorg"                                      # ⚙️ Org name
+      bucket = "inside-k3s"                                    # ⚙️ Bucket (có thể đổi: bucket_inside / bucket_external)
+      namedrop = ["processes","swap","system","nstat","diskio","kernal","cpu", "mem", "disk","net"]
+
+
+    # ===============================================
+    # INPUTS – Metrics hệ thống & Kubernetes
+    # ===============================================
+    [[inputs.cpu]]
+      percpu = true
+      totalcpu = true
+      collect_cpu_time = false
+
+    [[inputs.mem]]
+    [[inputs.disk]]
+    [[inputs.nstat]]
+    
+    [[inputs.diskio]]
+    [[inputs.kernel]]
+    [[inputs.net]]
+      interfaces = ["ens33"]
+
+    [[inputs.processes]]
+
+    [[inputs.swap]]
+
+    [[inputs.system]]
+
+ 
+    [[inputs.kubernetes]]
+      url = "https://127.0.0.1:10250"
+      bearer_token = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+      insecure_skip_verify = true
+
+    [[inputs.prometheus]]
+      urls = ["https://127.0.0.1:10250/metrics/cadvisor"]
+      bearer_token = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+      insecure_skip_verify = true

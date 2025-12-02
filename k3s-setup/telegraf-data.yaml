@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: telegraf-secrets
+  namespace: kube-system
+type: Opaque
+stringData:
+  INFLUX_TOKEN: "51VVwDwrFiTzf2Mmy6dpb1Kipl2Kekr7FA_cBCUNK2dmUHlsU4IhoqjWH5qt7FmlGU4zvRlRdj0HKb9iIwXKHg=="   # ⚙️ Token lấy từ InfluxDB (UI hoặc CLI)

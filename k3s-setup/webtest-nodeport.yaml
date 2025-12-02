@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fortio
+  namespace: default
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    nodePort: 31080     # ⚙️ CÓ THỂ CHỈNH PORT KHÁC
+  - name: grpc
+    port: 8079
+    targetPort: 8079
+  selector:
+    app: fortio
