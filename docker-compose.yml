@@ -1,52 +1,72 @@
-version: "3"
+version: "3.8"
 
 services:
-    influxdb:
-        build: ./influxdb
-        container_name: ${CONTAINER_PREFIX}_influxdb
-        ports:
-            - ${INFLUXDB_PORT}:${INFLUXDB_PORT}
-        volumes:
-            - /var/lib/influxdb:/var/lib/influxdb
-        restart: always
-        env_file:
-            - .env
-        networks:
-            - backend
-            - frontend
+  influxdb:
+    image: ${INFLUXDB_IMAGE}
+    container_name: ${CONTAINER_PREFIX}_influxdb
+    ports:
+      # Bind InfluxDB to a host IP specified in .env. Use 0.0.0.0 to listen on all interfaces
+      - "${INFLUXDB_BIND_IP}:${INFLUXDB_PORT}:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_ADMIN_USER}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
+    restart: always
+    networks:
+      - backend
 
-    telegraf:
-        build: ./telegraf
-        container_name: ${CONTAINER_PREFIX}_telegraf
-        links:
-            - influxdb
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-            - /proc:/hostfs/proc
-        privileged: true
-        restart: always
-        env_file:
-            - .env
-        networks: 
-            - backend
-            
-    grafana:
-        build: ./grafana
-        container_name: ${CONTAINER_PREFIX}_grafana
-        ports: 
-            - ${GRAFANA_PORT}:${GRAFANA_PORT}
-        links:
-            - influxdb
-        volumes:
-            - /var/lib/grafana
-            - /var/log/grafana
-            - /var/lib/grafana/plugins
-        restart: always
-        env_file:
-            - .env
-        networks:
-            - frontend
+  telegraf:
+    image: ${TELEGRAF_IMAGE}
+    container_name: ${CONTAINER_PREFIX}_telegraf
+    depends_on:
+      - influxdb
+    volumes:
+      # Mount your local telegraf config file (telegraf.conf) into the container
+      - ${TELEGRAF_CONFIG}:/etc/telegraf/telegraf.conf:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /proc:/hostfs/proc:ro
+    environment:
+      - HOST_PROC=/hostfs/proc
+      - INFLUX_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUX_BUCKET=${INFLUXDB_BUCKET}
+      - INFLUX_ORG=${INFLUXDB_ORG}
+      # If needed, you can set INFLUX_URL to http://influxdb:8086 (service DNS)
+      - INFLUX_URL=http://influxdb:8086
+    restart: always
+    networks:
+      - backend
+    # Telegraf intentionally has no ports mapped (no public exposure)
+
+  grafana:
+    image: ${GRAFANA_IMAGE}
+    container_name: ${CONTAINER_PREFIX}_grafana
+    # Bind Grafana only to the host IP set in .env (default 127.0.0.1 => local only)
+    ports:
+      - "${GRAFANA_BIND_IP}:${GRAFANA_PORT}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_HOST=smtp.gmail.com:587
+      - GF_SMTP_USER=lephuchuy951@gmail.com
+      - GF_SMTP_PASSWORD=zjvkfsgzewjyviey
+      - GF_SMTP_SKIP_VERIFY=true
+      - GF_SMTP_FROM_ADDRESS=lephuchuy951@gmail.com
+      - GF_SMTP_FROM_NAME=Grafana Alert
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: always
+    networks:
+      - backend
 
 networks:
-    backend:
-    frontend:
+  backend:
+
+volumes:
+  influxdb_data:
+  grafana_data:
