@@ -23,16 +23,16 @@ data:
     # ===============================================
     [[outputs.influxdb_v2]]
       urls = ["http://10.0.0.150:8086"]   # ⚙️ URL InfluxDB service
-      token = "$INFLUX_TOKEN"                                     # ⚙️ Token
-      organization = "myorg"                                      # ⚙️ Org name
-      bucket = "k3s"                                    # ⚙️ Bucket (có thể đổi: bucket_inside / bucket_external)
+      token = "$INFLUX_TOKEN"                                     #  Token
+      organization = "myorg"                                      #  Org name
+      bucket = "k3s"                                    #  Bucket (có thể đổi: bucket_inside / bucket_external)
       namepass = ["processes","swap","system","nstat","diskio","kernal","cpu", "mem", "disk","net"]
 
     [[outputs.influxdb_v2]]
       urls = ["http://10.0.0.150:8086"]   # ⚙️ URL InfluxDB service
-      token = "$INFLUX_TOKEN"                                     # ⚙️ Token
-      organization = "myorg"                                      # ⚙️ Org name
-      bucket = "inside-k3s"                                    # ⚙️ Bucket (có thể đổi: bucket_inside / bucket_external)
+      token = "$INFLUX_TOKEN"                                     #  Token
+      organization = "myorg"                                      #  Org name
+      bucket = "inside-k3s"                                    #  Bucket (có thể đổi: bucket_inside / bucket_external)
       namedrop = ["processes","swap","system","nstat","diskio","kernal","cpu", "mem", "disk","net"]
 
 
