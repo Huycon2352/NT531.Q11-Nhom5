@@ -9,7 +9,7 @@ spec:
   - name: http
     port: 8080
     targetPort: 8080
-    nodePort: 31080     # ⚙️ CÓ THỂ CHỈNH PORT KHÁC
+    nodePort: 31080     # Optional Port
   - name: grpc
     port: 8079
     targetPort: 8079
